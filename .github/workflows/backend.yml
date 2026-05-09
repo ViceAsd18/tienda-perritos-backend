@@ -20,7 +20,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build imagen backend
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest ./backend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest .
 
       - name: Push imagen backend
         run: docker push ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest
