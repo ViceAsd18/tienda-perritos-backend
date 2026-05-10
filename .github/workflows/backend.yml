@@ -6,25 +6,43 @@ on:
       - deploy
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout del código
         uses: actions/checkout@v3
+      - name: Build imagen backend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest .
 
+  push:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
       - name: Login a Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build y Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest
 
-      - name: Build imagen backend
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest .
-
-      - name: Push imagen backend
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest
-
-
-
-        
+  merge-to-main:
+    needs: push # Ahora depende directamente del Push exitoso
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configurar Git y Mergear
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git merge deploy --no-ff -m "Auto-merge: Imagen de Backend lista en Docker Hub"
+          git push origin main
