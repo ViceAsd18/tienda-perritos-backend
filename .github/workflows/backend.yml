@@ -31,21 +31,22 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/tienda-backend:latest
 
   merge-to-main:
-    needs: push # Ahora depende directamente del Push exitoso
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout del código
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Configurar Git y Mergear
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout main
-          git merge deploy --no-ff -m "Auto-merge: Imagen de Backend lista en Docker Hub"
-          git push origin main
+      needs: push 
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout del código
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: 0
+            token: ${{ secrets.GITHUB_TOKEN }}
+        - name: Configurar Git y Mergear
+          run: |
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            # CAMBIAMOS main POR master AQUÍ:
+            git checkout master
+            git merge deploy --no-ff -m "Auto-merge: Imagen de Backend lista en Docker Hub"
+            git push origin master
 
 
 
