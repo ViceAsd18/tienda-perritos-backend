@@ -2,9 +2,51 @@ version: "3.8"
 
 services:
   backend:
-    image: vicen2006/backend:latest
+    build: .  
+    container_name: tienda-backend
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: admin123
+      DB_NAME: tienda_perritos
+      DB_PORT: 3306
     ports:
       - "3001:3001"
+    depends_on:
+      - db
     restart: always
+    networks:
+      - app-network
 
-    
+  frontend:
+    image: vicen2006/tienda-frontend:latest
+    container_name: tienda-frontend
+    ports:
+      - "8080:80"
+    restart: always
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8
+    container_name: tienda-db
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: tienda_perritos
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql 
+    restart: always
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge
